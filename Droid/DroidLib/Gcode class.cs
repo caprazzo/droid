@@ -5,10 +5,13 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.IO;
 using System.Windows.Forms;
-
+using Grasshopper;
+using Grasshopper.Kernel;
 using Rhino.Geometry;
 using Rhino.Geometry.Intersect;
 using ClipperLib;
+using Grasshopper.Kernel.Types;
+using Grasshopper.Kernel.Data;
 
 namespace DroidLib
 {
@@ -24,7 +27,7 @@ namespace DroidLib
     public class DroidGCode
     {
         Polylines polylineList = new Polylines();
-
+        GH_Structure<GH_Number> flowData = new GH_Structure<GH_Number>();
         double nozzle;
         double layerHeight;
         double firstLayerHeight;
@@ -36,9 +39,10 @@ namespace DroidLib
         double retractionDistance;
         int retractionSpeed;
 
-        public DroidGCode(Polylines printList)
+        public DroidGCode(Polylines printList, GH_Structure<GH_Number> flowData)
         {
             polylineList = printList;
+            this.flowData = flowData;
         }
 
         public List<string> Info(in DroidParameters parameters)
@@ -91,10 +95,13 @@ namespace DroidLib
             retractionDistance = parameters.rectractionDistance;
             retractionSpeed = (parameters.retractionSpeed * 60);
 
+
+
             Vector3d firstLayerVec = new Vector3d(0, 0, firstLayerHeight);
+            
             foreach (Polyline x in polylineList)
             {
-                x.Transform(Transform.Translation(firstLayerVec));
+                x.Transform(Transform.Translation(firstLayerVec));                
             }
 
             List <string> allGCode = new List<string>();
@@ -104,6 +111,7 @@ namespace DroidLib
 
             for (int i = 0; i < polylineList.Count; i++)
             {
+                
                 List<string> code = new List<string>();
                 Polyline pl = polylineList[i];
                 Point3d travelPos = pl.First();
@@ -127,7 +135,8 @@ namespace DroidLib
                     code.AddRange(TravelTo(travelPos, travelRate));
                 }
 
-                code.AddRange(PrintPolyline(pl, feedRate));
+                List<GH_Number> flows = (List<GH_Number>)flowData.get_Branch(i);
+                code.AddRange(PrintPolyline(pl, feedRate, flows));
                 lastPos = pl.Last();
                 allGCode.Add(string.Join("\r\n", code));
             }
@@ -136,7 +145,7 @@ namespace DroidLib
             return allGCode;
         }
 
-        public List<string> PrintPolyline(in Polyline pl, in double printSpeed)
+        public List<string> PrintPolyline(in Polyline pl, in double printSpeed, List<GH_Number> flows)
         {
             List<string> partGCode = new List<string>();
             partGCode.Add("G92 E0");
@@ -147,7 +156,7 @@ namespace DroidLib
                 Point3d currentPt = pl[i];
                 Point3d prevPt = pl[i - 1];
                 string line = "";
-                extrusionDistance += currentPt.DistanceTo(prevPt) * extrusionRate;
+                extrusionDistance += currentPt.DistanceTo(prevPt) * extrusionRate * flows[i].Value;
                 line = "G1 X" + Round(currentPt.X) + " Y" + Round(currentPt.Y);
                 if (currentPt.Z != prevZ)
                 {

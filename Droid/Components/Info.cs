@@ -18,6 +18,7 @@ namespace Droid.Components
         public static readonly RegisterParams footer = new RegisterParams("Footer", "Foot", "Footer Gcode text");
         public static readonly RegisterParams paths = new RegisterParams("Droid Paths", "DP", "Droid Paths data");
         public static readonly RegisterParams parameters = new RegisterParams("Droid Parameters", "DPr", "Input Droid Parameters");
+        public static readonly RegisterParams flows = new RegisterParams("Flow Rate", "FR", "Flow Rate Data");
         public static readonly RegisterParams header = new RegisterParams("Droid Header", "Head", "Header Gcode Text");
         public static readonly RegisterParams gcode = new RegisterParams("Gcode", "GCd", "Gcode text");
         public static readonly RegisterParams heatedBed = new RegisterParams("Has Heated Bed", "HB", "Option to use Heated Bed");

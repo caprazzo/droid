@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 
 using Grasshopper.Kernel;
+using Grasshopper;
 using Rhino.Geometry;
 using DroidLib;
+using Grasshopper.Kernel.Types;
+using Grasshopper.Kernel.Data;
 
 namespace Droid.Components
 {
@@ -23,6 +26,7 @@ namespace Droid.Components
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter(Info.paths[0], Info.paths[1], Info.paths[2], GH_ParamAccess.item);
+            pManager.AddNumberParameter(Info.flows[0], Info.flows[1], Info.flows[2], GH_ParamAccess.tree);            
             pManager.AddGenericParameter(Info.parameters[0], Info.parameters[1], Info.parameters[2], GH_ParamAccess.item);
             pManager.AddTextParameter(Info.header[0], Info.header[1], Info.header[2], GH_ParamAccess.list);
             pManager.AddTextParameter(Info.footer[0], Info.footer[1], Info.footer[2], GH_ParamAccess.list);
@@ -45,17 +49,22 @@ namespace Droid.Components
         {
             DroidPaths dPath = new DroidPaths();
             DroidParameters dPara = new DroidParameters();
+            GH_Structure<GH_Number> flows;
+            // create a suitable instance to store the flow data
             List<string> head = new List<string>();
             List<string> foot = new List<string>();
 
+            
+
             if (!DA.GetData(0, ref dPath)) return;
-            if (!DA.GetData(1, ref dPara)) return;
-            if (!DA.GetDataList(2, head)) return;
-            if (!DA.GetDataList(3, foot)) return;
+            if (!DA.GetDataTree<GH_Number>(1, out flows)) return;
+            if (!DA.GetData(2, ref dPara)) return;
+            if (!DA.GetDataList(3, head)) return;
+            if (!DA.GetDataList(4, foot)) return;
 
             List<string> gcode = new List<string>();
             List<string> info = new List<string>();
-            DroidGCode output = new DroidGCode(dPath.printList);
+            DroidGCode output = new DroidGCode(dPath.printList, flows);
 
             gcode = output.Execute(dPara, head, foot);
             info = output.Info(dPara);
