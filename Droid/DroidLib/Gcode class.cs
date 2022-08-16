@@ -156,7 +156,14 @@ namespace DroidLib
                 Point3d currentPt = pl[i];
                 Point3d prevPt = pl[i - 1];
                 string line = "";
-                extrusionDistance += currentPt.DistanceTo(prevPt) * extrusionRate * flows[i].Value;
+                if (flows != null)
+                {
+                    extrusionDistance += currentPt.DistanceTo(prevPt) * extrusionRate * flows[i].Value;
+                }
+                else
+                {
+                    extrusionDistance += currentPt.DistanceTo(prevPt) * extrusionRate;
+                }
                 line = "G1 X" + Round(currentPt.X) + " Y" + Round(currentPt.Y);
                 if (currentPt.Z != prevZ)
                 {

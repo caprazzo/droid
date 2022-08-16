@@ -30,6 +30,8 @@ namespace Droid.Components
             pManager.AddGenericParameter(Info.parameters[0], Info.parameters[1], Info.parameters[2], GH_ParamAccess.item);
             pManager.AddTextParameter(Info.header[0], Info.header[1], Info.header[2], GH_ParamAccess.list);
             pManager.AddTextParameter(Info.footer[0], Info.footer[1], Info.footer[2], GH_ParamAccess.list);
+
+            pManager[1].Optional = true;
         }
 
         /// <summary>
@@ -49,15 +51,14 @@ namespace Droid.Components
         {
             DroidPaths dPath = new DroidPaths();
             DroidParameters dPara = new DroidParameters();
-            GH_Structure<GH_Number> flows;
+            GH_Structure<GH_Number> flows = null;
             // create a suitable instance to store the flow data
             List<string> head = new List<string>();
             List<string> foot = new List<string>();
 
             
-
             if (!DA.GetData(0, ref dPath)) return;
-            if (!DA.GetDataTree<GH_Number>(1, out flows)) return;
+            if (!DA.GetDataTree<GH_Number>(1, out flows)) flows = null;
             if (!DA.GetData(2, ref dPara)) return;
             if (!DA.GetDataList(3, head)) return;
             if (!DA.GetDataList(4, foot)) return;
